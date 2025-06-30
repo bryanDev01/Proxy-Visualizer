@@ -1,11 +1,12 @@
 import { Router } from "express"
-import { actualizarUsuario, eliminarUsuario, obtenerUsuario, obtenerUsuarios } from "../controllers/usuario.controller.js"
+import { actualizarUsuario, crearUsuario, eliminarUsuario, obtenerUsuarios, obtenerUsuario } from "../controllers/usuario.controller.js"
 
 const router = Router()
 
-router.get("/usuario", obtenerUsuarios)
-router.post("/usuario/:id", obtenerUsuario)
-router.patch("/usuario/:id", actualizarUsuario)
-router.delete("/usuario/:id", eliminarUsuario)
+router.get("/usuarios", obtenerUsuarios)
+router.get("/usuarios/:id", obtenerUsuario)
+router.post("/usuarios", crearUsuario)
+router.patch("/usuarios/:id", actualizarUsuario)
+router.delete("/usuarios/:id", eliminarUsuario)
 
 export default router
