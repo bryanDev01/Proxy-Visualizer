@@ -1,49 +1,99 @@
-import { pool } from "../db.js"
+import { supabaseClient } from "../db.js";
 
-export const obtenerTipoCriterio = async(req, res) => {
-    const { id } = req.params
+// Obtener todos los tipos de criterio
+export const obtenerTiposCriterio = async (req, res) => {
+  try {
+    const { data, error } = await supabaseClient
+      .from("tipo_criterio")
+      .select("*");
 
-    const result = await pool.query("SELECT * FROM tipo_criterio WHERE id = $1;", [id])
+    if (error) throw error;
 
-    res.json(result.rows[0])
-}
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener tipos de criterio" });
+  }
+};
 
-export const obtenerTiposCriterio = async(req, res) => {
-    const result = await pool.query("SELECT * FROM tipo_criterio")
+// Obtener tipo de criterio por ID
+export const obtenerTipoCriterio = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { data, error } = await supabaseClient
+      .from("tipo_criterio")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    res.json(result.rows)
-}
+    if (error) throw error;
 
-export const crearTipoCriterio = async(req, res) => {
-    const { tipo, cantidad } = req.body
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener el tipo de criterio" });
+  }
+};
 
-    const result = await pool.query("INSERT INTO tipo_criterio (tipo, cantidad) VALUES ($1, $2) RETURNING*;", [tipo, cantidad])
+// Crear nuevo tipo de criterio
+export const crearTipoCriterio = async (req, res) => {
+  const { tipo, cantidad } = req.body;
 
-    res.json(result.rows)
-}
+  try {
+    const { data, error } = await supabaseClient
+      .from("tipo_criterio")
+      .insert([{ tipo, cantidad }])
+      .select();
 
-export const actualizarTipoCriterio = async(req, res) => {
-    const { id } = req.params
-    const { tipo, cantidad } = req.body
+    if (error) throw error;
 
-    const result = await pool.query("UPDATE tipo_criterio SET tipo = COALESCE($1, tipo), cantidad = COALESCE($2, cantidad) WHERE id = $3;", [tipo, cantidad, id])
-    const response = await pool.query("SELECT * FROM tipo_criterio;")
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al crear el tipo de criterio" });
+  }
+};
 
-    if(result.rowCount === 0) {
-        res.status(404).json({message: "Tipo Criterio Not Found"})
+// Actualizar tipo de criterio parcialmente
+export const actualizarTipoCriterio = async (req, res) => {
+  const { id } = req.params;
+  const { tipo, cantidad } = req.body;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("tipo_criterio")
+      .update({ tipo, cantidad })
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: "Tipo criterio no encontrado" });
     }
-    
-    res.json(response.rows)
-}
 
-export const eliminarTipoCriterio = async(req, res) => {
-    const { id } = req.params
+    res.json(data[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al actualizar el tipo de criterio" });
+  }
+};
 
-    const result = await pool.query("DELETE FROM tipo_criterio WHERE id = $1;", [id])
+// Eliminar tipo de criterio
+export const eliminarTipoCriterio = async (req, res) => {
+  const { id } = req.params;
 
-    if(result.rowCount === 0) {
-        res.status(404).json({message: "Tipo Criterio Not Found"})
-    }
+  try {
+    const { error } = await supabaseClient
+      .from("tipo_criterio")
+      .delete()
+      .eq("id", id);
 
-    res.sendStatus(204)
-}
+    if (error) throw error;
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al eliminar el tipo de criterio" });
+  }
+};

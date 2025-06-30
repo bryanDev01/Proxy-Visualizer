@@ -2,50 +2,126 @@
 
 import { IUsuario } from "@/app/pages/Link5/page"
 import { Delete, Edit, Eye, EyeOff } from "lucide-react"
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 import Eliminar_Alerta from "./ui/Eliminar_Alerta"
+import { useRouter } from "next/navigation"
 
 function Usuario({ usuarios }: { usuarios: IUsuario[] }) {
+  const router = useRouter()
   const [visible, setVisible] = useState<boolean>(false)
   const [visibleEliminar, setVisibleEliminar] = useState<boolean>(false)
   const [usuarioData, setUsuarioData] = useState<IUsuario | null>(null)
   const [userId, setUserID] = useState<number | null>(null)
   const [showPassword, setShowPassword] = useState<boolean>(false)
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const isEdit = usuarioData && usuarioData.id !== null;
+    const url = isEdit ? `http://localhost:3001/api/usuarios/${usuarioData?.id}` : "http://localhost:3001/api/usuarios";
+    const method = isEdit ? "PATCH" : "POST";
+    const body = JSON.stringify({
+      ci: usuarioData?.ci,
+      nombre: usuarioData?.nombre,
+      apellido: usuarioData?.apellido,
+      contra: usuarioData?.contra,
+      rol: usuarioData?.rol
+    });
+    try {
+      console.log(isEdit, url, method, body)
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body
+      });
+      if (res.ok) {
+        setVisible(false);
+        router.refresh()
+      } else {
+        alert("Error al guardar usuario");
+      }
+    } catch (err) {
+      alert("Error de red");
+    }
+  }
   const hiddeEliminar = () => {
     setVisibleEliminar(false)
   }
 
+  const handleOpenCreate = () => {
+    setUsuarioData({ id: 0, ci: 0, nombre: "", apellido: "", contra: "", rol: "" })
+    setVisible(true)
+  }
+
   return (
-    <section className="w-full py-3 px-6 m-auto">
-      <ul className=" flex flex-col items-start justify-center">
-        {usuarios.map((usuario) => (
-          <li key={usuario.id} className=" flex items-center justify-between gap-6">
-            <div className=" flex gap-4 items-center text-slate-200">
-              <p className=" text-base font-semibold">{usuario.nombre} {usuario.apellido}</p>
-              <p className=" text-base font-semibold">{usuario.ci}</p>
-              <p className=" text-base font-semibold">{usuario.rol}</p>
+    <section>
+      {/* Botón de agregar usuario */}
+      <div className="flex justify-end mb-4">
+        <button
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+          onClick={handleOpenCreate}
+        >
+          <span className="text-xl">+</span>
+          Agregar Usuario
+        </button>
+      </div>
+
+      {usuarios.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-400 text-lg">No hay usuarios disponibles</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {usuarios.map((usuario) => (
+            <div 
+              key={usuario.id} 
+              className="bg-gray-700/50 backdrop-blur-sm rounded-lg border border-gray-600 p-4 hover:bg-gray-700/70 transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6 text-slate-200">
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-400 font-medium">Nombre Completo</span>
+                    <p className="text-base font-semibold">{usuario.nombre} {usuario.apellido}</p>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-400 font-medium">CI</span>
+                    <p className="text-base font-semibold">{usuario.ci}</p>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-400 font-medium">Rol</span>
+                    <p className="text-base font-semibold">{usuario.rol}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={async () => {
+                      setVisible(true)
+                      const res = await fetch(`http://localhost:3001/api/usuarios/${usuario.id}`)
+                      const data = await res.json()
+                      setUsuarioData(data)
+                    }}
+                    className="p-2 bg-green-600/20 hover:bg-green-600/30 rounded-lg transition-all duration-200"
+                  >
+                    <Edit className="w-4 h-4 fill-green-400" />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setVisibleEliminar(true)
+                      setUserID(usuario.id)
+                    }}
+                    className="p-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-all duration-200"
+                  >
+                    <Delete className="w-4 h-4 fill-red-400" />
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className=" flex gap-2 justify-center items-center">
-              <button onClick={async () => {
-                setVisible(true)
-                const res = await fetch(`http://localhost:3000/api/usuarios/${usuario.id}`)
-                const data = await res.json()
-                setUsuarioData(data)
-              }}><Edit className=" fill-green-400" /></button>
-              <button onClick={() => {
-                setVisibleEliminar(true)
-                setUserID(usuario.id)
-              }
-              }><Delete className=" fill-red-600" /></button>
-            </div>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      )}
 
       {/* Delete Modal Overlay */}
       <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ease-in-out z-50 ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ease-in-out z-[9999] ${
           visibleEliminar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setVisibleEliminar(false)}
@@ -61,7 +137,7 @@ function Usuario({ usuarios }: { usuarios: IUsuario[] }) {
 
       {/* Form Modal Overlay */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ease-in-out z-50 ${visible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ease-in-out z-[9999] ${visible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         onClick={() => setVisible(false)}
       >
@@ -71,7 +147,7 @@ function Usuario({ usuarios }: { usuarios: IUsuario[] }) {
             }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <form className="flex flex-col bg-gray-900 rounded-lg p-6 shadow-2xl border border-gray-700 min-w-[400px]">
+          <form className="flex flex-col bg-gray-900 rounded-lg p-6 shadow-2xl border border-gray-700 min-w-[400px]" onSubmit={handleSubmit}>
             <h2 className="text-white font-bold text-xl mb-4">Formulario de Usuario</h2>
 
             <div className="space-y-4">

@@ -1,51 +1,103 @@
-import { pool } from "../db.js";
+// import { pool } from "../db.js";
 
+import { supabaseClient } from "../db.js";
+
+// Obtener todos los usuarios
 export const obtenerUsuarios = async (req, res) => {
-  const result = await pool.query("SELECT * FROM usuario");
-  res.json(result.rows);
+  try {
+    const { data, error } = await supabaseClient
+      .from("usuario")
+      .select("*");
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener usuarios" });
+  }
 };
 
+// Obtener usuario por ID
 export const obtenerUsuario = async (req, res) => {
   const { id } = req.params;
-  const result = await pool.query("SELECT * FROM usuario WHERE id = $1;", [id]);
-  res.json(result.rows[0]);
+  try {
+    const { data, error } = await supabaseClient
+      .from("usuario")
+      .select("*")
+      .eq("id", id)
+      .single(); // Retorna un solo objeto si existe
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener el usuario" });
+  }
 };
 
+// Crear nuevo usuario
 export const crearUsuario = async (req, res) => {
   const { ci, nombre, apellido, contra, rol } = req.body;
 
-  const result = await pool.query(
-    "INSERT INTO usuario (ci, nombre, apellido, contra, rol) VALUES ($1, $2, $3, $4, $5 ) RETURNING*;",
-    [ci, nombre, apellido, contra, rol]
-  );
+  try {
+    const { data, error } = await supabaseClient
+      .from("usuario")
+      .insert([
+        { ci, nombre, apellido, contra, rol }
+      ])
+      .select(); // Devuelve el registro insertado
 
-  res.json(result.rows);
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al crear el usuario" });
+  }
 };
 
+// Actualizar usuario por ID
 export const actualizarUsuario = async (req, res) => {
   const { id } = req.params;
   const { ci, nombre, apellido, contra, rol } = req.body;
-  const result = await pool.query(
-    "UPDATE usuario SET ci = COALESCE($1, ci), nombre = COALESCE($2, nombre), apellido = COALESCE($3, apellido), contra = COALESCE($4, contra), rol = COALESCE($5, rol) WHERE id = $6;",
-    [ci, nombre, apellido, contra, rol, id]
-  );
-  const response = await pool.query("SELECT * FROM usuario;");
 
-  if (result.rowCount === 0) {
-    res.status(404).json({ message: "User Not Found" });
+  try {
+    const { data, error } = await supabaseClient
+      .from("usuario")
+      .update({ ci, nombre, apellido, contra, rol })
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    res.json(data[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al actualizar el usuario" });
   }
-
-  res.json(response.rows);
 };
 
+// Eliminar usuario por ID
 export const eliminarUsuario = async (req, res) => {
   const { id } = req.params;
 
-  const result = await pool.query("DELETE FROM usuario WHERE id = $1;", [id]);
+  try {
+    const { error } = await supabaseClient
+      .from("usuario")
+      .delete()
+      .eq("id", id);
 
-  if (result.rowCount === 0) {
-    res.status(404).json({ message: "User Not Found" });
+    if (error) throw error;
+
+    res.sendStatus(204); // No content
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al eliminar el usuario" });
   }
-
-  res.sendStatus(204);
 };

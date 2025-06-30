@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { AlertTriangle } from "lucide-react"
 
-function Eliminar_Alerta({ className, onHiddeEliminar, id }: { className: string, onHiddeEliminar: () => void, id: number | null }) {
+function Eliminar_Alerta({ className, onHiddeEliminar, id, ruta }: { className: string, onHiddeEliminar: () => void, id: number | null, ruta?: string }) {
   const router = useRouter()
 
   return (
@@ -36,8 +36,10 @@ function Eliminar_Alerta({ className, onHiddeEliminar, id }: { className: string
           <button
             className="bg-red-600 text-white rounded-md px-4 py-2 hover:bg-red-700 transition-all duration-200 font-medium"
             onClick={async() => {
+              const rutaCorrecta = ruta ? ruta : "usuarios"
+              console.log("Rutaaaaaa",rutaCorrecta)
               try {
-                const response = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+                const response = await fetch(`http://localhost:3001/api/${rutaCorrecta}/${id}`, {
                   method: "DELETE",
                   headers: {
                     "Content-Type": "application/json"

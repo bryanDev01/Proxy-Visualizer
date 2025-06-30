@@ -1,54 +1,99 @@
-import { pool } from "../db.js";
+import { supabaseClient } from "../db.js";
 
-export const obtenerValorCriterio = async(req, res) => {
-  const { id } = req.params
-
-  const result = await pool.query("SELECT * FROM valor_criterio WHERE id = $1", [id])
-
-  res.json(result.rows[0])
-}
-
+// Obtener todos los valores de criterio
 export const obtenerValorCriterios = async (req, res) => {
-  const result = await pool.query("SELECT * FROM valor_criterio;");
+  try {
+    const { data, error } = await supabaseClient
+      .from("valor_criterio")
+      .select("*");
 
-  res.json(result.rows);
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener valores de criterio" });
+  }
 };
 
+// Obtener valor de criterio por ID
+export const obtenerValorCriterio = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { data, error } = await supabaseClient
+      .from("valor_criterio")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener el valor del criterio" });
+  }
+};
+
+// Crear nuevo valor de criterio
 export const crearValorCriterio = async (req, res) => {
   const { tipo, criterio } = req.body;
 
-  const result = await pool.query(
-    "INSERT INTO valor_criterio (tipo, criterio) VALUES ($1, $2) RETURNING*;",
-    [tipo, criterio]
-  );
+  try {
+    const { data, error } = await supabaseClient
+      .from("valor_criterio")
+      .insert([{ tipo, criterio }])
+      .select();
 
-  res.json(result.rows);
+    if (error) throw error;
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al crear el valor del criterio" });
+  }
 };
 
+// Actualizar valor de criterio parcialmente
 export const actualizarValorCriterio = async (req, res) => {
   const { id } = req.params;
   const { tipo, criterio } = req.body;
-  
-  const result = await pool.query("UPDATE valor_criterio SET tipo = COALESCE($1, tipo), criterio = COALESCE($2, criterio) WHERE id = $3;", [tipo, criterio, id])
-  const response = await pool.query("SELECT * FROM valor_criterio;")
 
-  if(result.rowCount === 0) {
-    res.status(404).json({ message: "Valor Criterio Not Found"})
+  try {
+    const { data, error } = await supabaseClient
+      .from("valor_criterio")
+      .update({ tipo, criterio })
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: "Valor criterio no encontrado" });
+    }
+
+    res.json(data[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al actualizar el valor del criterio" });
   }
-
-  res.json(response.rows)
 };
 
+// Eliminar valor de criterio
 export const eliminarValorCriterio = async (req, res) => {
   const { id } = req.params;
 
-  const result = await pool.query("DELETE FROM valor_criterio WHERE id = $1;", [
-    id,
-  ]);
+  try {
+    const { error } = await supabaseClient
+      .from("valor_criterio")
+      .delete()
+      .eq("id", id);
 
-  if (result.rowCount === 0) {
-    res.status(404).json({ message: "Valor Criterio Not Found" });
+    if (error) throw error;
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al eliminar el valor del criterio" });
   }
-
-  res.sendStatus(204);
 };
