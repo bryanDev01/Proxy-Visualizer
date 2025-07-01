@@ -27,7 +27,7 @@ function Dashboard({ usuarios, tiposCriterio, valoresCriterio }: DashboardProps)
     .slice(0, 3)
 
   // Calcular estadísticas de criterios
-  const criteriosConCantidad = valoresCriterio.filter(c => c.cantidad && c.cantidad > 0)
+  const criteriosConCantidad = tiposCriterio.filter(c => c.cantidad && c.cantidad > 0)
   const totalCantidad = criteriosConCantidad.reduce((sum, c) => sum + (c.cantidad || 0), 0)
   const promedioCantidad = criteriosConCantidad.length > 0 ? totalCantidad / criteriosConCantidad.length : 0
 

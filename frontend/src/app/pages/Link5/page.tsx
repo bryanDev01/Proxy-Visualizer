@@ -57,6 +57,25 @@ async function Link5() {
 
       {/* Management Section */}
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Opciones de exportar siempre visibles */}
+        <div className="flex justify-end gap-2 mb-4">
+          <a
+            href="http://localhost:3001/api/exportar-datos?format=csv"
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Descargar CSV
+          </a>
+          <a
+            href="http://localhost:3001/api/exportar-datos?format=excel"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Descargar Excel
+          </a>
+        </div>
         {/* Usuarios Section */}
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">

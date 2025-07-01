@@ -76,22 +76,22 @@ function Usuario({ usuarios }: { usuarios: IUsuario[] }) {
               key={usuario.id} 
               className="bg-gray-700/50 backdrop-blur-sm rounded-lg border border-gray-600 p-4 hover:bg-gray-700/70 transition-all duration-200"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6 text-slate-200">
-                  <div className="flex flex-col">
+              <div className=" w-full flex items-center justify-between">
+                <div className="flex items-center gap-6 text-slate-200 w-3/4">
+                  <div className="flex flex-col w-1/3">
                     <span className="text-sm text-gray-400 font-medium">Nombre Completo</span>
                     <p className="text-base font-semibold">{usuario.nombre} {usuario.apellido}</p>
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col w-1/5">
                     <span className="text-sm text-gray-400 font-medium">CI</span>
                     <p className="text-base font-semibold">{usuario.ci}</p>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm text-gray-400 font-medium">Rol</span>
+                  <div className="flex flex-col w-1/5">
+                    <span className="text-sm text-gray-400 font-medium ">Rol</span>
                     <p className="text-base font-semibold">{usuario.rol}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-1/4 justify-end">
                   <button 
                     onClick={async () => {
                       setVisible(true)

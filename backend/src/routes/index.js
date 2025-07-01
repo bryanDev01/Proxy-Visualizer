@@ -5,6 +5,7 @@ import yearSitesStats from "./yearStats.routes.js"
 import usuarios from "./usuarios.routes.js"
 import valor_criterio from "./valores_criterio.routes.js"
 import tipo_criterio from "./tipos_criterio.routes.js"
+import exportarDatos from "./exportar.routes.js"
 
 const mainRoute = Router()
 
@@ -14,5 +15,6 @@ mainRoute.use(tipo_criterio)
 mainRoute.use(dailyStats)
 mainRoute.use(yearSitesStats)
 mainRoute.use(topSitesStats)
+mainRoute.use(exportarDatos)
 
 export default mainRoute
